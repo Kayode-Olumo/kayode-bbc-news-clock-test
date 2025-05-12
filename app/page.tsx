@@ -183,13 +183,16 @@ export default function Home() {
       <div className="mt-8 text-sm text-gray-500">
         <h2 className="font-semibold mb-2">Instructions:</h2>
         <ul className="list-disc pl-5 space-y-1">
-          <li>Click "Update Clock Now" to manually update the clock</li>
           <li>
-            Toggle "Auto-Update" to enable/disable automatic updates every
-            minute
+            Click &quot;Update Clock Now&quot; to manually update the clock
           </li>
           <li>
-            Click "Open Caspar Template" to view the HTML template in a new tab
+            Toggle &quot;Auto-Update&quot; to enable/disable automatic updates
+            every minute
+          </li>
+          <li>
+            Click &quot;Open Caspar Template&quot; to view the HTML template in
+            a new tab
           </li>
         </ul>
       </div>

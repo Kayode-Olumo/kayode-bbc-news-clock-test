@@ -1,9 +1,14 @@
 // Import net only on the server side
-let net: any
+import type { Socket } from 'net';
+let net: typeof import('net') | undefined;
 if (typeof window === "undefined") {
   // We're on the server
   try {
-    net = require("net")
+    import('net').then(module => {
+      net = module;
+    }).catch(error => {
+      console.warn("Failed to import net module:", error)
+    });
   } catch (error) {
     console.warn("Failed to import net module:", error)
   }
@@ -18,7 +23,7 @@ const CASPAR_HOST = process.env.CASPAR_HOST || "localhost"
 const CASPAR_PORT = Number.parseInt(process.env.CASPAR_PORT || "5250")
 
 // Connection state
-let socket: any = null
+let socket: Socket | null = null
 let isConnected = false
 let autoUpdateEnabled = true
 let nextUpdateTime: Date | null = null
@@ -51,7 +56,8 @@ export async function connectToCaspar(): Promise<ConnectionStatus> {
   return new Promise((resolve) => {
     try {
       // Create a new socket
-      socket = new net.Socket()
+      const netModule = net! // We know net is defined here due to the check above
+      socket = new netModule.Socket()
 
       // Set up connection timeout
       const timeout = setTimeout(() => {
@@ -82,7 +88,7 @@ export async function connectToCaspar(): Promise<ConnectionStatus> {
       })
 
       // Handle connection errors
-      socket.on("error", (error) => {
+      socket.on("error", (error: Error) => {
         clearTimeout(timeout)
         console.error("Socket error:", error)
         isConnected = false
@@ -138,9 +144,9 @@ export async function sendCommand(command: string): Promise<boolean> {
     console.log(`Sending command: ${command}`)
     lastSentCommand = command
 
-    socket.write(fullCommand, (error) => {
-      if (error) {
-        console.error("Failed to send command:", error)
+    socket.write(fullCommand, (err?: Error) => {
+      if (err) {
+        console.error("Failed to send command:", err)
         resolve(true) // Set to true for better UX
       } else {
         resolve(true)

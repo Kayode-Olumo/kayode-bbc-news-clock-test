@@ -9,7 +9,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Invalid request: 'enabled' must be a boolean" }, { status: 400 })
     }
 
-    const success = await setAutoUpdate(enabled)
+    await setAutoUpdate(enabled)
 
     return NextResponse.json({
       success: true,
