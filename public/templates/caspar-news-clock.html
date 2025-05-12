@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BBC News Lower Thirds</title>
+    <style>
+        /* Reset and base styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            width: 1920px;
+            height: 1080px;
+            overflow: hidden;
+            font-family: Helvetica Neue, Arial, sans-serif;
+            background-color: transparent;
+        }
+        
+        /* Lower thirds container */
+        #lower-thirds {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            transform: translateY(100%); /* Start off-screen */
+            transition: transform 0.5s ease-in-out;
+            display: flex;
+            flex-direction: row;
+        }
+        
+        /* BBC News branding */
+        .news-brand {
+            background-color: #BB1919; /* BBC Red */
+            color: white;
+            padding: 12px 20px;
+            font-weight: bold;
+            font-size: 32px;
+            display: inline-block;
+        }
+        
+        /* Breaking news section */
+        .breaking-news {
+            background-color: white;
+            color: black;
+            padding: 12px 20px;
+            font-weight: bold;
+            font-size: 32px;
+            display: inline-block;
+        }
+        
+        /* Visible state */
+        .visible {
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <div id="lower-thirds">
+        <div class="news-brand" id="news-text">BBC NEWS 00:00</div>
+        <div class="breaking-news">BREAKING NEWS</div>
+    </div>
+
+    <script>
+        // Get DOM elements
+        const lowerThirds = document.getElementById('lower-thirds');
+        const newsText = document.getElementById('news-text');
+        
+        // Track visibility state
+        let isVisible = false;
+        
+        /**
+         * The leftTab function that will be called by Caspar CG
+         * @param {string} state - 'on' to show, 'off' to hide
+         * @param {string} text - The text to display (optional)
+         */
+        function leftTab(state, text) {
+            console.log(`leftTab called with: ${state}, ${text}`);
+            
+            if (state === 'on') {
+                // Update text if provided
+                if (text) {
+                    newsText.textContent = text;
+                }
+                
+                // Only animate if not already visible
+                if (!isVisible) {
+                    lowerThirds.classList.add('visible');
+                    isVisible = true;
+                }
+            } else if (state === 'off') {
+                // Animate out
+                lowerThirds.classList.remove('visible');
+                isVisible = false;
+            }
+        }
+        
+        // Expose the leftTab function to the window object for Caspar CG to call
+        window.leftTab = leftTab;
+        
+        // For testing in browser
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'o') {
+                // Test "on" state
+                const now = new Date();
+                const hours = now.getHours().toString().padStart(2, '0');
+                const minutes = now.getMinutes().toString().padStart(2, '0');
+                leftTab('on', `BBC NEWS ${hours}:${minutes}`);
+            } else if (event.key === 'f') {
+                // Test "off" state
+                leftTab('off');
+            }
+        });
+        
+        console.log('BBC News Lower Thirds template loaded');
+        console.log('Press "o" to test showing the overlay, "f" to test hiding it');
+    </script>
+</body>
+</html>
