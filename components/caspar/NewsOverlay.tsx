@@ -7,13 +7,22 @@ interface NewsOverlayProps {
   text: string;
 }
 
+type LeftTabFunction = (state: "on" | "off", text?: string) => void;
+
+// Extend Window interface
+declare global {
+  interface Window {
+    leftTab: LeftTabFunction;
+  }
+}
+
 export default function NewsOverlay({ visible, text }: NewsOverlayProps) {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
     // Expose the leftTab function to the window object for Caspar CG to call
     if (typeof window !== "undefined") {
-      (window as any).leftTab = (state: "on" | "off", text?: string) => {
+      const leftTab: LeftTabFunction = (state, text) => {
         if (state === "on" && text) {
           setIsVisible(true);
           // You could update some state here to change the text
@@ -21,12 +30,13 @@ export default function NewsOverlay({ visible, text }: NewsOverlayProps) {
           setIsVisible(false);
         }
       };
+      window.leftTab = leftTab;
     }
 
     return () => {
       // Clean up the global function when component unmounts
       if (typeof window !== "undefined") {
-        delete (window as any).leftTab;
+        window.leftTab = undefined as unknown as LeftTabFunction;
       }
     };
   }, []);
