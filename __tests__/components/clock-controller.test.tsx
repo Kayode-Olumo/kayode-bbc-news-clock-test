@@ -1,5 +1,5 @@
 import "@testing-library/jest-dom";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import ClockController from "@/components/caspar/ClockController";
 import { useCasparClock } from "@/hooks/useCasparClock";
 
@@ -24,6 +24,8 @@ describe("ClockController", () => {
       isConnected: true,
       isVisible: false,
       status: "Connected",
+      autoUpdateEnabled: true,
+      setAutoUpdateEnabled: jest.fn(),
       updateClock: jest.fn(),
       toggleOverlay: jest.fn(),
     });
@@ -36,7 +38,10 @@ describe("ClockController", () => {
 
   test("shows connected status when connected", () => {
     render(<ClockController />);
-    expect(screen.getByText("Connected")).toBeInTheDocument();
+    const statusElement = screen.getByText("Connected", {
+      selector: "p.text-sm.text-green-500",
+    });
+    expect(statusElement).toBeInTheDocument();
   });
 
   test("shows disconnected status when not connected", () => {
@@ -45,12 +50,17 @@ describe("ClockController", () => {
       isConnected: false,
       isVisible: false,
       status: "Disconnected",
+      autoUpdateEnabled: true,
+      setAutoUpdateEnabled: jest.fn(),
       updateClock: jest.fn(),
       toggleOverlay: jest.fn(),
     });
 
     render(<ClockController />);
-    expect(screen.getByText("Disconnected")).toBeInTheDocument();
+    const statusElement = screen.getByText("Disconnected", {
+      selector: "p.text-sm.text-red-500",
+    });
+    expect(statusElement).toBeInTheDocument();
   });
 
   test("calls updateClock when update button is clicked", () => {
@@ -60,6 +70,8 @@ describe("ClockController", () => {
       isConnected: true,
       isVisible: false,
       status: "Connected",
+      autoUpdateEnabled: true,
+      setAutoUpdateEnabled: jest.fn(),
       updateClock,
       toggleOverlay: jest.fn(),
     });
@@ -76,6 +88,8 @@ describe("ClockController", () => {
       isConnected: true,
       isVisible: false,
       status: "Connected",
+      autoUpdateEnabled: true,
+      setAutoUpdateEnabled: jest.fn(),
       updateClock: jest.fn(),
       toggleOverlay,
     });
@@ -86,20 +100,20 @@ describe("ClockController", () => {
   });
 
   test("toggles auto-update when button is clicked", async () => {
-    render(<ClockController />);
-
-    // Initially enabled
-    expect(screen.getByText("Disable Auto-Update")).toBeInTheDocument();
-
-    // Click to disable
-    fireEvent.click(screen.getByText("Disable Auto-Update"));
-
-    // Wait for state update
-    await waitFor(() => {
-      expect(global.fetch).toHaveBeenCalledWith(
-        "/api/clock/auto-update",
-        expect.any(Object)
-      );
+    const setAutoUpdateEnabled = jest.fn();
+    (useCasparClock as jest.Mock).mockReturnValue({
+      currentTime: "12:34",
+      isConnected: true,
+      isVisible: false,
+      status: "Connected",
+      autoUpdateEnabled: true,
+      setAutoUpdateEnabled,
+      updateClock: jest.fn(),
+      toggleOverlay: jest.fn(),
     });
+
+    render(<ClockController />);
+    fireEvent.click(screen.getByText("Disable Auto-Update"));
+    expect(setAutoUpdateEnabled).toHaveBeenCalledWith(false);
   });
 });
