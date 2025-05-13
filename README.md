@@ -8,6 +8,10 @@ Here’s a quick look at the interface and output:
 
 ![Control UI](./public/screenshots/control-interface.png)
 
+### Control Interface (After Clock Update)
+
+![Control UI - Updated](./public/screenshots/control-interface-updated.png)
+
 ### CasparCG Template (Empty State)
 
 ![Template Empty](./public/screenshots/template-empty.png)
