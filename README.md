@@ -141,12 +141,6 @@ As broadcasting tech evolves, there's definitely room to push this further. A fe
 
 ## Getting Started
 
-Here's your `README.md` file formatted for download:
-
-```markdown file="README.md"
-...
-```
-
 ### 1. Install dependencies
 
 ```shell
