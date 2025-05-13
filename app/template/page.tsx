@@ -2,6 +2,15 @@
 
 import { useEffect } from "react";
 
+type LeftTabFunction = (state: "on" | "off", text?: string) => void;
+
+// Extend Window interface
+declare global {
+  interface Window {
+    leftTab: LeftTabFunction;
+  }
+}
+
 export default function CasparTemplate() {
   useEffect(() => {
     // Define the leftTab function for Caspar CG to call
@@ -49,7 +58,7 @@ export default function CasparTemplate() {
 
     return () => {
       // Clean up
-      delete window.leftTab;
+      window.leftTab = undefined as unknown as LeftTabFunction;
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, []);
