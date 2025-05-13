@@ -166,6 +166,26 @@ As broadcasting tech evolves, there's definitely room to push this further. A fe
 
 ## Getting Started
 
+### 0. Clone the repository
+
+Using HTTPS:
+
+```bash
+git clone https://github.com/Kayode-Olumo/kayode-bbc-news-clock-test.git
+```
+
+Or using SSH:
+
+```bash
+git clone git@github.com:Kayode-Olumo/kayode-bbc-news-clock-test.git
+```
+
+Then move into the project directory:
+
+```bash
+cd kayode-bbc-news-clock-test
+```
+
 ### 1. Install dependencies
 
 ```shell
