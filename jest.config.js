@@ -10,6 +10,7 @@ module.exports = {
       "ts-jest",
       {
         tsconfig: "tsconfig.json",
+        useESM: true,
       },
     ],
   },
@@ -17,4 +18,10 @@ module.exports = {
   testMatch: ["**/__tests__/**/*.test.(ts|tsx)"],
   moduleFileExtensions: ["ts", "tsx", "js", "jsx", "json", "node"],
   transformIgnorePatterns: ["/node_modules/(?!(@testing-library|@emotion)/)"],
+  globals: {
+    "ts-jest": {
+      tsconfig: "tsconfig.json",
+      useESM: true,
+    },
+  },
 };
