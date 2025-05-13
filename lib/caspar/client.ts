@@ -120,14 +120,8 @@ export async function connectToCaspar(): Promise<ConnectionStatus> {
  */
 export async function sendCommand(command: string): Promise<boolean> {
   // If we're in the browser, return true for better UX
-  if (typeof window !== "undefined") {
+  if (typeof window !== "undefined" || !net) {
     console.warn("Attempted to send Caspar CG command in browser environment")
-    return true
-  }
-
-  // If net module is not available, return true for better UX
-  if (!net) {
-    console.warn("Net module not available")
     return true
   }
 
@@ -269,7 +263,11 @@ export async function closeConnection(): Promise<void> {
  * Set overlay visibility
  */
 export async function toggleOverlay(visible: boolean): Promise<boolean> {
-  const command = `CG 1 INVOKE 1 "leftTab('${visible ? "on" : "off"}')"`
+  if (visible === currentVisibility) {
+    return true
+  }
+
+  const command = visible ? "CG 1 INVOKE 1 show()" : "CG 1 INVOKE 1 hide()"
   const success = await sendCommand(command)
   currentVisibility = visible
   return success
@@ -282,8 +280,10 @@ export async function getConnectionStatus(): Promise<ConnectionStatusDetails> {
   return {
     isConnected,
     lastCommand: lastSentCommand,
-    nextUpdateTime: getNextUpdateTime(),
+    currentTime: lastCurrentTime,
+    isVisible: currentVisibility,
     autoUpdateEnabled,
+    nextUpdateTime: getNextUpdateTime(),
   }
 }
 
@@ -292,23 +292,20 @@ export async function getConnectionStatus(): Promise<ConnectionStatusDetails> {
  */
 export function getCasparStatus(): ClockState {
   return {
-    isConnected: isConnected,
-    currentTime: lastCurrentTime,
+    currentTime: lastCurrentTime || "",
+    isConnected,
     isVisible: currentVisibility,
   }
 }
 
 // Handle process termination
 if (typeof process !== "undefined" && typeof window === "undefined") {
-  process.on("SIGINT", async () => {
+  const handleShutdown = async () => {
     console.log("Shutting down...")
     await closeConnection()
     process.exit(0)
-  })
+  }
 
-  process.on("SIGTERM", async () => {
-    console.log("Shutting down...")
-    await closeConnection()
-    process.exit(0)
-  })
+  process.on("SIGINT", handleShutdown)
+  process.on("SIGTERM", handleShutdown)
 }
