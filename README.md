@@ -105,6 +105,31 @@ Startup process:
 4. **Error Recovery:** While some handling exists, a production-grade failover strategy would need further work.
 5. **UI Simplicity:** The current overlay is functional but basic. More complex graphics would need further build-out.
 
+## Implementation Journey: My Learnings
+
+Building the BBC News Clock System came with its fair share of smooth sailing and unexpected hurdles. Here’s a quick breakdown of what went well and where I had to dig in and problem-solve.
+
+### What Went Well
+
+- **UI with React + Tailwind**: Having worked on modular front-end systems before, I found building the control panel UI intuitive. Tailwind sped up styling, and Next.js routing made view separation simple.
+- **API Routes**: Server-side logic with Next.js felt natural, especially coming from projects where I’ve handled API and integration layers. TypeScript helped keep things robust.
+- **State Management**: I’ve built plenty of hook-based components in past roles, so managing app state and persisting settings with localStorage came together smoothly.
+
+### What Took More Work
+
+- **CasparCG Learning Curve**: This was my first time working with a broadcast graphics engine, and the learning curve was real. The documentation assumed a lot of industry-specific knowledge, so I had to experiment and isolate key behaviours through smaller test apps.
+- **AMCP Protocol**: Implementing the command layer reminded me of working with strict API integrations—every space and quotation mark mattered. I built a mini testing tool to safely iterate and verify commands before adding them into the core flow.
+- **TCP Socket Issues**: Running into browser limitations with TCP meant rethinking the architecture on the fly. It was a good reminder of the trade-offs between front-end freedom and lower-level networking.
+- **Testing Without CasparCG**: I had to simulate hardware behaviour using `netcat`. Not having real hardware access reminded me of previous challenges mocking APIs or dealing with third-party systems.
+- **Clock Scheduling**: Ensuring updates landed exactly on the minute introduced precision challenges that aren't common in typical front-end apps. I ended up writing a self-correcting timer to prevent drift.
+
+### Key Learnings
+
+- **Broadcast ≠ Web**: The priorities shift—reliability and timing outweigh feature-rich interfaces. Understanding this helped me better align the system with the real-world environment it’s meant for.
+- **Start with Protocols**: Reading through protocol docs before writing any code saved hours later. Abstracting protocol logic helped keep things clean and adaptable.
+- **Environment-Aware Design**: Knowing when code is running in the browser or server is critical—clear boundaries between these helped maintain structure.
+- **Simulate Early**: When the real thing isn’t available, mock it. That lesson from past projects definitely helped here too. Simulation and logging turned out to be essential for confidence.
+
 ## Future Improvements and Roadmap
 
 As broadcasting tech evolves, there's definitely room to push this further. A few ideas and observations:
