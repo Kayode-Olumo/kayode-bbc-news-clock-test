@@ -1,5 +1,21 @@
 # BBC News Clock System
 
+## Preview
+
+Here’s a quick look at the interface and output:
+
+### Control Interface
+
+![Control UI](./public/screenshots/control-interface.png)
+
+### CasparCG Template (Empty State)
+
+![Template Empty](./public/screenshots/template-empty.png)
+
+### CasparCG Template (With Overlay)
+
+![Template Overlay](./public/screenshots/template-overlay.png)
+
 ## Introduction
 
 This project is a custom application built to automatically update the "News Clock" shown on the BBC News Channel's lower thirds (strap). It ensures the time shown on screen remains accurate, enhancing the broadcast's professional appearance.
@@ -189,25 +205,3 @@ Test coverage includes:
 - Unit tests for the TCP client
 - Component tests for the control interface
 - Mocked TCP socket behaviour for testing without CasparCG
-
-## Deployment
-
-### Option 1: Full Deployment (Recommended for Production)
-
-1. Use a Node-compatible server (e.g. EC2, DigitalOcean) with network access to CasparCG
-2. Deploy the full app:
-
-```shell
-git clone https://github.com/your-username/bbc-news-clock.git
-cd bbc-news-clock
-npm install
-npm run build
-npm start
-```
-
-3. Set the environment variables:
-
-```env
-CASPAR_HOST=your-caspar-cg-host
-CASPAR_PORT=5250
-```
