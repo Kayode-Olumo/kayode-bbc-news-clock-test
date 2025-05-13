@@ -1,5 +1,13 @@
 # BBC News Clock System
 
+## Introduction
+
+This project is a custom application built to automatically update the "News Clock" shown on the BBC News Channel's lower thirds (strap). It ensures the time shown on screen remains accurate, enhancing the broadcast's professional appearance.
+
+The app works as a client-server system: a TCP client communicates with CasparCG via the AMCP protocol to control graphics, while a separate HTML/JavaScript interface handles the on-screen visuals.
+
+It's built using Next.js, React, TypeScript, and Tailwind CSS—modern technologies that help provide a reliable and flexible solution.
+
 ## Preview
 
 Here’s a quick look at the interface and output:
@@ -19,14 +27,6 @@ Here’s a quick look at the interface and output:
 ### CasparCG Template (With Overlay)
 
 ![Template Overlay](./public/screenshots/template-overlay.png)
-
-## Introduction
-
-This project is a custom application built to automatically update the "News Clock" shown on the BBC News Channel's lower thirds (strap). It ensures the time shown on screen remains accurate, enhancing the broadcast's professional appearance.
-
-The app works as a client-server system: a TCP client communicates with CasparCG via the AMCP protocol to control graphics, while a separate HTML/JavaScript interface handles the on-screen visuals.
-
-It's built using Next.js, React, TypeScript, and Tailwind CSS—modern technologies that help provide a reliable and flexible solution.
 
 ## Solution Overview
 
