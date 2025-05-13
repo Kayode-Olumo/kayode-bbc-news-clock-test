@@ -11,7 +11,7 @@ export interface ConnectionStatus {
    */
   export interface ClockState {
     isConnected: boolean
-    currentTime: string | null
+    currentTime: string
     isVisible: boolean
   }
   
@@ -29,6 +29,8 @@ export interface ConnectionStatus {
   export interface ConnectionStatusDetails {
     isConnected: boolean
     lastCommand: string | null
+    currentTime: string | null
+    isVisible: boolean
     nextUpdateTime: string | null
     autoUpdateEnabled: boolean
   }

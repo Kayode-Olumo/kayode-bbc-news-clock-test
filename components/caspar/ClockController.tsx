@@ -24,10 +24,7 @@ export default function ClockController() {
 
   const handleToggleAutoUpdate = async () => {
     try {
-      // Toggle the auto-update state through the hook
       setAutoUpdateEnabled(!autoUpdateEnabled);
-
-      // Also notify the server
       await fetch("/api/caspar/settings/auto-update", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

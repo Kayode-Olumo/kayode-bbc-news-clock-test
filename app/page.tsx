@@ -10,12 +10,15 @@ export default function Home() {
   const [autoUpdateEnabled, setAutoUpdateEnabled] = useState<boolean>(true);
   const [nextUpdate, setNextUpdate] = useState<string>("");
 
-  // Load auto-update setting from localStorage on initial render
+  const handleError = (error: unknown, context: string) => {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`Error in ${context}:`, error);
+    setStatus(`Error in ${context}: ${message}`);
+  };
+
   useEffect(() => {
-    // Check if localStorage is available (not in SSR)
     if (typeof window !== "undefined") {
       const savedSetting = localStorage.getItem("autoUpdateEnabled");
-      // Only update if a value exists in localStorage
       if (savedSetting !== null) {
         setAutoUpdateEnabled(savedSetting === "true");
       }
@@ -23,37 +26,29 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    // Initialize the connection
     const initialize = async () => {
       try {
         setStatus("Connecting to Caspar CG...");
-
         const response = await fetch("/api/caspar/connect", { method: "POST" });
         const data = await response.json();
 
         setIsConnected(data.connected);
         setStatus(data.message);
 
-        // Start auto-updates if connected and enabled
         if (data.connected && autoUpdateEnabled) {
           startAutoUpdates();
         }
       } catch (error) {
-        setStatus(
-          `Error: ${error instanceof Error ? error.message : String(error)}`
-        );
+        handleError(error, "connection");
       }
     };
 
     initialize();
-
-    // Cleanup on unmount
     return () => {
-      stopAutoUpdates();
+      void stopAutoUpdates();
     };
-  }, [autoUpdateEnabled]); // Add autoUpdateEnabled as a dependency
+  }, [autoUpdateEnabled]);
 
-  // Watch for changes to autoUpdateEnabled
   useEffect(() => {
     if (autoUpdateEnabled) {
       startAutoUpdates();
@@ -75,7 +70,7 @@ export default function Home() {
         setNextUpdate(data.nextUpdateTime);
       }
     } catch (error) {
-      console.error("Failed to start auto-updates:", error);
+      handleError(error, "starting auto-updates");
     }
   };
 
@@ -87,14 +82,13 @@ export default function Home() {
         body: JSON.stringify({ enabled: false }),
       });
     } catch (error) {
-      console.error("Failed to stop auto-updates:", error);
+      handleError(error, "stopping auto-updates");
     }
   };
 
   const updateClock = async () => {
     try {
       setStatus("Updating clock...");
-
       const response = await fetch("/api/caspar/clock/update", {
         method: "POST",
       });
@@ -103,11 +97,7 @@ export default function Home() {
       setCurrentTime(data.time);
       setStatus(`Clock updated to ${data.time}`);
     } catch (error) {
-      setStatus(
-        `Error updating clock: ${
-          error instanceof Error ? error.message : String(error)
-        }`
-      );
+      handleError(error, "updating clock");
     }
   };
 
@@ -115,7 +105,6 @@ export default function Home() {
     const newValue = !autoUpdateEnabled;
     setAutoUpdateEnabled(newValue);
 
-    // Save to localStorage
     if (typeof window !== "undefined") {
       localStorage.setItem("autoUpdateEnabled", newValue.toString());
     }
