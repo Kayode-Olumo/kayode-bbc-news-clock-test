@@ -20,4 +20,18 @@ global.ResizeObserver = jest.fn().mockImplementation(() => ({
   observe: jest.fn(),
   unobserve: jest.fn(),
   disconnect: jest.fn(),
-})); 
+}));
+
+// Suppress console warnings in tests
+const originalWarn = console.warn;
+console.warn = (...args) => {
+  if (
+    typeof args[0] === 'string' &&
+    (args[0].includes('Attempted to initialize Caspar CG connection in browser environment') ||
+     args[0].includes('Attempted to send Caspar CG command in browser environment') ||
+     args[0].includes('Attempted to update clock in browser environment'))
+  ) {
+    return;
+  }
+  originalWarn(...args);
+}; 
