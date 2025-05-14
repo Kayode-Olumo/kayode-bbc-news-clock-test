@@ -224,6 +224,7 @@ export async function getConnectionStatus(): Promise<ConnectionStatusDetails> {
     isVisible: currentVisibility,
     autoUpdateEnabled,
     nextUpdateTime: getNextUpdateTime(),
+    mode: typeof window !== "undefined" || !net ? "mock" : "real"
   }
 }
 
@@ -232,6 +233,7 @@ export function getCasparStatus(): ClockState {
     currentTime: lastCurrentTime || "",
     isConnected,
     isVisible: currentVisibility,
+    mode: typeof window !== "undefined" || !net ? "mock" : "real"
   }
 }
 

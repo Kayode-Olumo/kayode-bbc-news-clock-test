@@ -4,7 +4,6 @@ import { useEffect } from "react";
 
 type LeftTabFunction = (state: "on" | "off", text?: string) => void;
 
-// Extend Window interface
 declare global {
   interface Window {
     leftTab: LeftTabFunction;
@@ -32,7 +31,6 @@ const CasparTemplate = () => {
       }
     };
 
-    // Add keyboard shortcuts for testing
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "o") {
         const now = new Date();

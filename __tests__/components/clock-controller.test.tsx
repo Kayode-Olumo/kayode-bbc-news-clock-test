@@ -7,7 +7,6 @@ jest.mock("@/hooks/useCasparClock", () => ({
   useCasparClock: jest.fn(),
 }));
 
-// Mock fetch globally
 global.fetch = jest.fn(() =>
   Promise.resolve({
     ok: true,
@@ -35,13 +34,11 @@ describe("ClockController", () => {
   it("renders the clock controller with all UI elements", () => {
     render(<ClockController />);
 
-    // Check main elements
     expect(screen.getByText("Clock Controller")).toBeInTheDocument();
     expect(
       screen.getByText("Manage the BBC News clock display")
     ).toBeInTheDocument();
 
-    // Check status section
     expect(screen.getByText("Current Time")).toBeInTheDocument();
     expect(screen.getByText("12:34")).toBeInTheDocument();
     expect(screen.getByText("Status")).toBeInTheDocument();
@@ -49,7 +46,6 @@ describe("ClockController", () => {
     expect(screen.getByText("Overlay: Hidden")).toBeInTheDocument();
     expect(screen.getByText("Auto-Update: Enabled")).toBeInTheDocument();
 
-    // Check buttons
     expect(screen.getByText("Update Clock Now")).toBeInTheDocument();
     expect(screen.getByText("Show Overlay")).toBeInTheDocument();
     expect(screen.getByText("Disable Auto-Update")).toBeInTheDocument();

@@ -6,7 +6,6 @@ import {
   getCasparStatus,
 } from "@/lib/caspar/client"
 
-// Mock the net module
 jest.mock("net", () => {
   type MockSocket = {
     connect: jest.Mock;
