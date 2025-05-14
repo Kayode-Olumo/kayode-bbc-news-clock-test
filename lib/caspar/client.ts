@@ -1,17 +1,4 @@
 import type { Socket } from 'net';
-let net: typeof import('net') | undefined;
-if (typeof window === "undefined") {
-  try {
-    import('net').then(module => {
-      net = module;
-    }).catch(error => {
-      console.warn("Failed to import net module:", error)
-    });
-  } catch (error) {
-    console.warn("Failed to import net module:", error)
-  }
-}
-
 import { formatCommand } from "./commands"
 import type { ConnectionStatus, ClockState, ClockUpdateResult, ConnectionStatusDetails } from "./types"
 
@@ -26,6 +13,15 @@ let updateTimeout: NodeJS.Timeout | null = null
 let currentVisibility = false
 let lastSentCommand: string | null = null
 let lastCurrentTime: string | null = null
+
+let net: typeof import('net') | undefined;
+if (typeof window === "undefined") {
+  import('net').then(module => {
+    net = module;
+  }).catch(error => {
+    console.warn("Failed to import net module:", error);
+  });
+}
 
 export async function connectToCaspar(): Promise<ConnectionStatus> {
   if (typeof window !== "undefined") {
