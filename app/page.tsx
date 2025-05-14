@@ -1,3 +1,26 @@
+/**
+ * BBC News Clock System - Main Page Component
+ *
+ * This is the main interface for the BBC News Clock System, which manages the synchronization
+ * of time displays with Caspar CG server. The system provides both manual and automatic
+ * clock updates, with a user-friendly interface for controlling these features.
+ *
+ * Key Features:
+ * - Real-time connection status with Caspar CG server
+ * - Manual clock updates
+ * - Automatic clock updates with configurable intervals
+ * - Persistent settings using localStorage
+ * - Error handling and status reporting
+ * - Template preview functionality
+ *
+ * State Management:
+ * - status: Tracks the current system status and error messages
+ * - currentTime: Stores the last updated time
+ * - isConnected: Monitors connection state with Caspar CG
+ * - autoUpdateEnabled: Controls automatic update functionality
+ * - nextUpdate: Shows when the next automatic update will occur
+ */
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -10,6 +33,11 @@ export default function Home() {
   const [autoUpdateEnabled, setAutoUpdateEnabled] = useState<boolean>(true);
   const [nextUpdate, setNextUpdate] = useState<string>("");
 
+  /**
+   * Error handler for consistent error reporting across the application
+   * @param error - The error object or message
+   * @param context - The context where the error occurred
+   */
   const handleError = (error: unknown, context: string) => {
     const message = error instanceof Error ? error.message : String(error);
     console.error(`Error in ${context}:`, error);
@@ -25,6 +53,10 @@ export default function Home() {
     }
   }, []);
 
+  /**
+   * Initializes the connection to Caspar CG and sets up auto-updates if enabled
+   * Uses useEffect to run on component mount and when autoUpdateEnabled changes
+   */
   useEffect(() => {
     const initialize = async () => {
       try {
@@ -49,6 +81,10 @@ export default function Home() {
     };
   }, [autoUpdateEnabled]);
 
+  /**
+   * Manages auto-update state changes
+   * Starts or stops auto-updates based on the autoUpdateEnabled state
+   */
   useEffect(() => {
     if (autoUpdateEnabled) {
       startAutoUpdates();
@@ -57,6 +93,10 @@ export default function Home() {
     }
   }, [autoUpdateEnabled]);
 
+  /**
+   * Starts the automatic clock update system
+   * Configures the server to send updates at regular intervals
+   */
   const startAutoUpdates = async () => {
     try {
       const response = await fetch("/api/caspar/settings/auto-update", {
@@ -74,6 +114,10 @@ export default function Home() {
     }
   };
 
+  /**
+   * Stops the automatic clock update system
+   * Disables the server-side auto-update configuration
+   */
   const stopAutoUpdates = async () => {
     try {
       await fetch("/api/caspar/settings/auto-update", {
@@ -86,6 +130,10 @@ export default function Home() {
     }
   };
 
+  /**
+   * Manually updates the clock display
+   * Sends a request to the server to update the current time
+   */
   const updateClock = async () => {
     try {
       setStatus("Updating clock...");
@@ -101,6 +149,10 @@ export default function Home() {
     }
   };
 
+  /**
+   * Toggles the auto-update feature
+   * Updates both local state and persists the setting in localStorage
+   */
   const toggleAutoUpdate = () => {
     const newValue = !autoUpdateEnabled;
     setAutoUpdateEnabled(newValue);

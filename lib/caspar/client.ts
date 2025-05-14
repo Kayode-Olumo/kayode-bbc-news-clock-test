@@ -1,3 +1,27 @@
+/**
+ * Caspar CG Client Library
+ * 
+ * This library provides the core functionality for interacting with the Caspar CG server.
+ * It handles all communication with the Caspar CG server, including connection management,
+ * command sending, and clock updates.
+ * 
+ * Key Features:
+ * - Connection management with Caspar CG server
+ * - Command formatting and sending
+ * - Clock updates and synchronization
+ * - Auto-update scheduling
+ * - Template management
+ * - Error handling and recovery
+ * 
+ * The library is designed to work in both server and browser environments:
+ * - Server: Full functionality with actual Caspar CG communication
+ * - Browser: Mock responses for better UX during development
+ * 
+ * Configuration:
+ * - CASPAR_HOST: Server hostname (default: localhost)
+ * - CASPAR_PORT: Server port (default: 5250)
+ */
+
 // Import net only on the server side
 import type { Socket } from 'net';
 let net: typeof import('net') | undefined;
@@ -34,6 +58,9 @@ let lastCurrentTime: string | null = null
 
 /**
  * Initialize the connection to Caspar CG
+ * Establishes a TCP connection to the Caspar CG server and sets up event handlers
+ * 
+ * @returns {Promise<ConnectionStatus>} Connection status and message
  */
 export async function connectToCaspar(): Promise<ConnectionStatus> {
   // If we're in the browser, return a mock response
@@ -117,6 +144,10 @@ export async function connectToCaspar(): Promise<ConnectionStatus> {
 
 /**
  * Send a command to Caspar CG
+ * Formats and sends a command to the Caspar CG server
+ * 
+ * @param {string} command - The command to send
+ * @returns {Promise<boolean>} Success status of the command
  */
 export async function sendCommand(command: string): Promise<boolean> {
   // If we're in the browser, return true for better UX
@@ -151,6 +182,9 @@ export async function sendCommand(command: string): Promise<boolean> {
 
 /**
  * Add the template to channel 1
+ * Loads the main template into Caspar CG
+ * 
+ * @returns {Promise<boolean>} Success status of the operation
  */
 export async function addTemplate(): Promise<boolean> {
   return sendCommand("CG 1 ADD 1 main/MAIN 1")
@@ -158,6 +192,9 @@ export async function addTemplate(): Promise<boolean> {
 
 /**
  * Update the clock on the UI
+ * Sends the current time to Caspar CG for display
+ * 
+ * @returns {Promise<ClockUpdateResult>} Result containing success status and current time
  */
 export async function updateClock(): Promise<ClockUpdateResult> {
   const now = new Date()
@@ -180,6 +217,10 @@ export async function updateClock(): Promise<ClockUpdateResult> {
 
 /**
  * Set auto-update enabled/disabled
+ * Configures whether the clock should update automatically
+ * 
+ * @param {boolean} enabled - Whether auto-update should be enabled
+ * @returns {Promise<boolean>} Success status of the operation
  */
 export async function setAutoUpdate(enabled: boolean): Promise<boolean> {
   autoUpdateEnabled = enabled
@@ -195,7 +236,9 @@ export async function setAutoUpdate(enabled: boolean): Promise<boolean> {
 }
 
 /**
- * Get the next update time
+ * Get the next scheduled update time
+ * 
+ * @returns {string|null} The next update time in local time format, or null if no update scheduled
  */
 export function getNextUpdateTime(): string | null {
   return nextUpdateTime ? nextUpdateTime.toLocaleTimeString() : null
@@ -203,6 +246,7 @@ export function getNextUpdateTime(): string | null {
 
 /**
  * Clear any scheduled updates
+ * Removes any pending clock updates
  */
 function clearScheduledUpdates(): void {
   if (updateTimeout) {
@@ -215,6 +259,7 @@ function clearScheduledUpdates(): void {
 
 /**
  * Schedule the next clock update
+ * Calculates and schedules the next automatic clock update
  */
 function scheduleNextUpdate(): void {
   if (!autoUpdateEnabled || typeof window !== "undefined") return
@@ -244,7 +289,8 @@ function scheduleNextUpdate(): void {
 }
 
 /**
- * Close the connection
+ * Close the connection to Caspar CG
+ * Cleans up resources and closes the socket connection
  */
 export async function closeConnection(): Promise<void> {
   if (typeof window !== "undefined") return

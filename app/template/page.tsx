@@ -1,16 +1,45 @@
+/**
+ * Caspar CG Template Component
+ *
+ * This component represents the HTML template that Caspar CG loads for displaying
+ * the BBC News clock and lower thirds. It provides a visual preview of how the
+ * template will appear in Caspar CG and includes testing functionality.
+ *
+ * Key Features:
+ * - Visual representation of the BBC News lower thirds
+ * - Interactive testing with keyboard shortcuts
+ * - Smooth animations for showing/hiding the overlay
+ * - Responsive design that matches Caspar CG's requirements
+ *
+ * The component exposes a global `leftTab` function that Caspar CG can call to:
+ * 1. Show/hide the lower thirds
+ * 2. Update the clock text
+ *
+ * Testing:
+ * - Press 'o' to show the overlay with current time
+ * - Press 'f' to hide the overlay
+ */
+
 "use client";
 
 import { useEffect } from "react";
 
+/**
+ * Type definition for the leftTab function that Caspar CG calls
+ */
 type LeftTabFunction = (state: "on" | "off", text?: string) => void;
 
-// Extend Window interface
+// Extend Window interface to include the leftTab function
 declare global {
   interface Window {
     leftTab: LeftTabFunction;
   }
 }
 
+/**
+ * The main template component that renders the BBC News lower thirds
+ * and handles the interaction with Caspar CG
+ */
 export default function CasparTemplate() {
   useEffect(() => {
     // Define the leftTab function for Caspar CG to call
