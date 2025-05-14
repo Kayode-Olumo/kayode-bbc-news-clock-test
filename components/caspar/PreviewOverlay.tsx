@@ -1,7 +1,7 @@
 "use client";
 import { useCasparClock } from "@/hooks/useCasparClock";
 
-export default function PreviewOverlay() {
+const PreviewOverlay = () => {
   const { isVisible, currentTime } = useCasparClock();
   const displayText = `BBC NEWS ${currentTime || "00:00"}`;
 
@@ -21,4 +21,6 @@ export default function PreviewOverlay() {
       </div>
     </div>
   );
-}
+};
+
+export default PreviewOverlay;

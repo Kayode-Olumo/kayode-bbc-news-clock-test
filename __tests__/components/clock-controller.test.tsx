@@ -1,14 +1,13 @@
 import "@testing-library/jest-dom";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import ClockController from "@/components/caspar/ClockController";
 import { useCasparClock } from "@/hooks/useCasparClock";
 
-// Mock the useCasparClock hook
 jest.mock("@/hooks/useCasparClock", () => ({
   useCasparClock: jest.fn(),
 }));
 
-// Mock fetch
+// Mock fetch globally
 global.fetch = jest.fn(() =>
   Promise.resolve({
     ok: true,
@@ -17,43 +16,56 @@ global.fetch = jest.fn(() =>
 ) as jest.Mock;
 
 describe("ClockController", () => {
+  const defaultMockState = {
+    currentTime: "12:34",
+    isConnected: true,
+    isVisible: false,
+    status: "Connected to Caspar CG",
+    autoUpdateEnabled: true,
+    setAutoUpdateEnabled: jest.fn(),
+    updateClock: jest.fn(),
+    toggleOverlay: jest.fn(),
+  };
+
   beforeEach(() => {
-    // Default mock implementation
-    (useCasparClock as jest.Mock).mockReturnValue({
-      currentTime: "12:34",
-      isConnected: true,
-      isVisible: false,
-      status: "Connected",
-      autoUpdateEnabled: true,
-      setAutoUpdateEnabled: jest.fn(),
-      updateClock: jest.fn(),
-      toggleOverlay: jest.fn(),
-    });
+    jest.clearAllMocks();
+    (useCasparClock as jest.Mock).mockReturnValue(defaultMockState);
   });
 
-  test("renders the current time", () => {
+  it("renders the clock controller with all UI elements", () => {
     render(<ClockController />);
+
+    // Check main elements
+    expect(screen.getByText("Clock Controller")).toBeInTheDocument();
+    expect(
+      screen.getByText("Manage the BBC News clock display")
+    ).toBeInTheDocument();
+
+    // Check status section
+    expect(screen.getByText("Current Time")).toBeInTheDocument();
     expect(screen.getByText("12:34")).toBeInTheDocument();
+    expect(screen.getByText("Status")).toBeInTheDocument();
+    expect(screen.getByText("Connected")).toBeInTheDocument();
+    expect(screen.getByText("Overlay: Hidden")).toBeInTheDocument();
+    expect(screen.getByText("Auto-Update: Enabled")).toBeInTheDocument();
+
+    // Check buttons
+    expect(screen.getByText("Update Clock Now")).toBeInTheDocument();
+    expect(screen.getByText("Show Overlay")).toBeInTheDocument();
+    expect(screen.getByText("Disable Auto-Update")).toBeInTheDocument();
   });
 
-  test("shows connected status when connected", () => {
+  it("shows correct connection status styling", () => {
     render(<ClockController />);
-    const statusElement = screen.getByText("Connected", {
-      selector: "p.text-sm.text-green-500",
-    });
-    expect(statusElement).toBeInTheDocument();
+    const statusElement = screen.getByText("Connected");
+    expect(statusElement).toHaveClass("text-green-500");
   });
 
-  test("shows disconnected status when not connected", () => {
+  it("shows disconnected status when not connected", () => {
     (useCasparClock as jest.Mock).mockReturnValue({
-      currentTime: "--:--",
+      ...defaultMockState,
       isConnected: false,
-      isVisible: false,
       status: "Disconnected",
-      autoUpdateEnabled: true,
-      setAutoUpdateEnabled: jest.fn(),
-      updateClock: jest.fn(),
-      toggleOverlay: jest.fn(),
     });
 
     render(<ClockController />);
@@ -63,17 +75,11 @@ describe("ClockController", () => {
     expect(statusElement).toBeInTheDocument();
   });
 
-  test("calls updateClock when update button is clicked", () => {
+  it("calls updateClock when update button is clicked", async () => {
     const updateClock = jest.fn();
     (useCasparClock as jest.Mock).mockReturnValue({
-      currentTime: "12:34",
-      isConnected: true,
-      isVisible: false,
-      status: "Connected",
-      autoUpdateEnabled: true,
-      setAutoUpdateEnabled: jest.fn(),
+      ...defaultMockState,
       updateClock,
-      toggleOverlay: jest.fn(),
     });
 
     render(<ClockController />);
@@ -81,16 +87,10 @@ describe("ClockController", () => {
     expect(updateClock).toHaveBeenCalled();
   });
 
-  test("calls toggleOverlay when show/hide button is clicked", () => {
+  it("calls toggleOverlay when show/hide button is clicked", async () => {
     const toggleOverlay = jest.fn();
     (useCasparClock as jest.Mock).mockReturnValue({
-      currentTime: "12:34",
-      isConnected: true,
-      isVisible: false,
-      status: "Connected",
-      autoUpdateEnabled: true,
-      setAutoUpdateEnabled: jest.fn(),
-      updateClock: jest.fn(),
+      ...defaultMockState,
       toggleOverlay,
     });
 
@@ -99,21 +99,55 @@ describe("ClockController", () => {
     expect(toggleOverlay).toHaveBeenCalled();
   });
 
-  test("toggles auto-update when button is clicked", async () => {
+  it("updates button text based on overlay visibility", () => {
+    (useCasparClock as jest.Mock).mockReturnValue({
+      ...defaultMockState,
+      isVisible: true,
+    });
+
+    render(<ClockController />);
+    expect(screen.getByText("Hide Overlay")).toBeInTheDocument();
+  });
+
+  it("handles auto-update toggle", async () => {
     const setAutoUpdateEnabled = jest.fn();
     (useCasparClock as jest.Mock).mockReturnValue({
-      currentTime: "12:34",
-      isConnected: true,
-      isVisible: false,
-      status: "Connected",
-      autoUpdateEnabled: true,
+      ...defaultMockState,
       setAutoUpdateEnabled,
-      updateClock: jest.fn(),
-      toggleOverlay: jest.fn(),
     });
 
     render(<ClockController />);
     fireEvent.click(screen.getByText("Disable Auto-Update"));
-    expect(setAutoUpdateEnabled).toHaveBeenCalledWith(false);
+
+    await waitFor(() => {
+      expect(setAutoUpdateEnabled).toHaveBeenCalledWith(false);
+    });
+  });
+
+  it("shows correct button variants based on state", () => {
+    (useCasparClock as jest.Mock).mockReturnValue({
+      ...defaultMockState,
+      isVisible: true,
+      autoUpdateEnabled: false,
+    });
+
+    render(<ClockController />);
+
+    const hideButton = screen.getByText("Hide Overlay");
+    const enableButton = screen.getByText("Enable Auto-Update");
+
+    expect(hideButton).toHaveClass("bg-destructive");
+    expect(enableButton).toHaveClass("border-input");
+  });
+
+  it("displays status messages", () => {
+    const statusMessage = "Updating clock...";
+    (useCasparClock as jest.Mock).mockReturnValue({
+      ...defaultMockState,
+      status: statusMessage,
+    });
+
+    render(<ClockController />);
+    expect(screen.getByText(statusMessage)).toBeInTheDocument();
   });
 });

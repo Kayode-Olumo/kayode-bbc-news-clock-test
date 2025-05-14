@@ -9,14 +9,13 @@ interface NewsOverlayProps {
 
 type LeftTabFunction = (state: "on" | "off", text?: string) => void;
 
-// Extend Window interface
 declare global {
   interface Window {
     leftTab: LeftTabFunction;
   }
 }
 
-export default function NewsOverlay({ visible, text }: NewsOverlayProps) {
+const NewsOverlay = ({ visible, text }: NewsOverlayProps) => {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
@@ -25,7 +24,6 @@ export default function NewsOverlay({ visible, text }: NewsOverlayProps) {
       const leftTab: LeftTabFunction = (state, text) => {
         if (state === "on" && text) {
           setIsVisible(true);
-          // You could update some state here to change the text
         } else if (state === "off") {
           setIsVisible(false);
         }
@@ -62,4 +60,6 @@ export default function NewsOverlay({ visible, text }: NewsOverlayProps) {
       </div>
     </div>
   );
-}
+};
+
+export default NewsOverlay;
