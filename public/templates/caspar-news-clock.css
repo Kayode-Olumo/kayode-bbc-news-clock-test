@@ -1,0 +1,46 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    width: 1920px;
+    height: 1080px;
+    overflow: hidden;
+    font-family: Helvetica Neue, Arial, sans-serif;
+    background-color: transparent;
+}
+
+#lower-thirds {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    transform: translateY(100%);
+    transition: transform 0.5s ease-in-out;
+    display: flex;
+    flex-direction: row;
+}
+
+.news-brand {
+    background-color: #BB1919;
+    color: white;
+    padding: 12px 20px;
+    font-weight: bold;
+    font-size: 32px;
+    display: inline-block;
+}
+
+.breaking-news {
+    background-color: white;
+    color: black;
+    padding: 12px 20px;
+    font-weight: bold;
+    font-size: 32px;
+    display: inline-block;
+}
+
+.visible {
+    transform: translateY(0);
+} 

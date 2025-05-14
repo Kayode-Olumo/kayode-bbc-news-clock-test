@@ -8,9 +8,9 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/Card";
+} from "@/components/ui/card/index";
 
-export default function ClockController() {
+const ClockController = () => {
   const {
     currentTime,
     isConnected,
@@ -91,4 +91,6 @@ export default function ClockController() {
       </CardFooter>
     </Card>
   );
-}
+};
+
+export default ClockController;

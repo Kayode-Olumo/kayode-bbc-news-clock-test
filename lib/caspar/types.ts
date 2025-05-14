@@ -1,37 +1,26 @@
-/**
- * Connection status response
- */
 export interface ConnectionStatus {
     connected: boolean
     message: string
   }
   
-  /**
-   * Current state of the clock
-   */
-  export interface ClockState {
-    isConnected: boolean
+export interface ClockState {
     currentTime: string
+    isConnected: boolean
     isVisible: boolean
+    mode: "mock" | "real"
   }
   
-  /**
-   * Clock update result
-   */
-  export interface ClockUpdateResult {
+export interface ClockUpdateResult {
     success: boolean
     time: string
   }
   
-  /**
-   * Connection status details
-   */
-  export interface ConnectionStatusDetails {
+export interface ConnectionStatusDetails {
     isConnected: boolean
     lastCommand: string | null
     currentTime: string | null
     isVisible: boolean
-    nextUpdateTime: string | null
     autoUpdateEnabled: boolean
+    nextUpdateTime: string | null
+    mode: "mock" | "real"
   }
-  
