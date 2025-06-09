@@ -40,9 +40,8 @@ declare global {
  * The main template component that renders the BBC News lower thirds
  * and handles the interaction with Caspar CG
  */
-export default function CasparTemplate() {
+const CasparTemplate = () => {
   useEffect(() => {
-    // Define the leftTab function for Caspar CG to call
     window.leftTab = (state: "on" | "off", text?: string) => {
       console.log(`leftTab called with: ${state}, ${text}`);
 
@@ -52,41 +51,33 @@ export default function CasparTemplate() {
       if (!lowerThirds || !newsText) return;
 
       if (state === "on") {
-        // Update text if provided
         if (text) {
           newsText.textContent = text;
         }
 
-        // Show the lower thirds
         lowerThirds.classList.add("visible");
       } else if (state === "off") {
-        // Hide the lower thirds
         lowerThirds.classList.remove("visible");
       }
     };
 
-    // Add keyboard shortcuts for testing
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "o") {
-        // Test "on" state
         const now = new Date();
         const hours = now.getHours().toString().padStart(2, "0");
         const minutes = now.getMinutes().toString().padStart(2, "0");
         window.leftTab("on", `BBC NEWS ${hours}:${minutes}`);
       } else if (event.key === "f") {
-        // Test "off" state
         window.leftTab("off");
       }
     };
 
     document.addEventListener("keydown", handleKeyDown);
 
-    // Log instructions
     console.log("BBC News Lower Thirds template loaded");
     console.log('Press "o" to test showing the overlay, "f" to test hiding it');
 
     return () => {
-      // Clean up
       window.leftTab = undefined as unknown as LeftTabFunction;
       document.removeEventListener("keydown", handleKeyDown);
     };
@@ -129,4 +120,6 @@ export default function CasparTemplate() {
       </div>
     </div>
   );
-}
+};
+
+export default CasparTemplate;

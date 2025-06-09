@@ -26,7 +26,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
-export default function Home() {
+const Home = () => {
   const [status, setStatus] = useState<string>("Initializing...");
   const [currentTime, setCurrentTime] = useState<string>("");
   const [isConnected, setIsConnected] = useState<boolean>(false);
@@ -239,4 +239,6 @@ export default function Home() {
       </div>
     </main>
   );
-}
+};
+
+export default Home;

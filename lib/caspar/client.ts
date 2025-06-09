@@ -24,29 +24,12 @@
 
 // Import net only on the server side
 import type { Socket } from 'net';
-let net: typeof import('net') | undefined;
-if (typeof window === "undefined") {
-  // We're on the server
-  try {
-    import('net').then(module => {
-      net = module;
-    }).catch(error => {
-      console.warn("Failed to import net module:", error)
-    });
-  } catch (error) {
-    console.warn("Failed to import net module:", error)
-  }
-}
-
-// Import commands and types
 import { formatCommand } from "./commands"
 import type { ConnectionStatus, ClockState, ClockUpdateResult, ConnectionStatusDetails } from "./types"
 
-// Configuration
 const CASPAR_HOST = process.env.CASPAR_HOST || "localhost"
 const CASPAR_PORT = Number.parseInt(process.env.CASPAR_PORT || "5250")
 
-// Connection state
 let socket: Socket | null = null
 let isConnected = false
 let autoUpdateEnabled = true
@@ -62,31 +45,46 @@ let lastCurrentTime: string | null = null
  * 
  * @returns {Promise<ConnectionStatus>} Connection status and message
  */
+let net: typeof import('net') | undefined;
+if (typeof window === "undefined") {
+  import('net').then(module => {
+    net = module;
+  }).catch(error => {
+    console.warn("Failed to import net module:", error);
+  });
+}
+
+/**
+ * Establishes a connection to the Caspar CG server.
+ * This function handles the connection lifecycle including error handling,
+ * timeout management, and template initialization.
+ * @returns Promise<ConnectionStatus> - The connection status and message
+ */
 export async function connectToCaspar(): Promise<ConnectionStatus> {
-  // If we're in the browser, return a mock response
+  // Check if running in browser environment - return mock connection
   if (typeof window !== "undefined") {
     console.warn("Attempted to initialize Caspar CG connection in browser environment")
     return { connected: true, message: "Mock connection in browser environment" }
   }
 
-  // If net module is not available, return a mock response
+  // Verify net module is available - return mock connection if not
   if (!net) {
     console.warn("Net module not available")
     return { connected: true, message: "Mock connection (net module not available)" }
   }
 
-  // If already connected, return success
+  // Return early if already connected
   if (isConnected && socket) {
     return { connected: true, message: "Already connected" }
   }
 
+  // Create new connection promise
   return new Promise((resolve) => {
     try {
-      // Create a new socket
-      const netModule = net! // We know net is defined here due to the check above
+      const netModule = net!
       socket = new netModule.Socket()
 
-      // Set up connection timeout
+      // Set up connection timeout - will destroy socket if connection takes too long
       const timeout = setTimeout(() => {
         socket?.destroy()
         resolve({ connected: false, message: "Connection timeout" })
@@ -98,14 +96,12 @@ export async function connectToCaspar(): Promise<ConnectionStatus> {
         isConnected = true
         console.log(`Connected to Caspar CG at ${CASPAR_HOST}:${CASPAR_PORT}`)
 
-        // Add the template
+        // Add template and handle auto-update if enabled
         addTemplate()
           .then(() => {
-            // Start auto-updates if enabled
             if (autoUpdateEnabled) {
               scheduleNextUpdate()
             }
-
             resolve({ connected: true, message: "Connected and template added" })
           })
           .catch((error) => {
@@ -123,19 +119,20 @@ export async function connectToCaspar(): Promise<ConnectionStatus> {
         resolve({ connected: false, message: `Connection error: ${error.message}` })
       })
 
-      // Handle connection close
+      // Handle connection closure
       socket.on("close", () => {
         isConnected = false
         socket = null
         console.log("Connection closed")
       })
 
-      // Connect to the server
+      // Attempt to establish connection
       socket.connect(CASPAR_PORT, CASPAR_HOST)
     } catch (error) {
+      // Handle any errors during socket creation
       console.error("Failed to create socket:", error)
       resolve({
-        connected: true, // Set to true for better UX in preview mode
+        connected: true,
         message: `Mock connection (socket creation failed): ${error instanceof Error ? error.message : String(error)}`,
       })
     }
@@ -150,7 +147,6 @@ export async function connectToCaspar(): Promise<ConnectionStatus> {
  * @returns {Promise<boolean>} Success status of the command
  */
 export async function sendCommand(command: string): Promise<boolean> {
-  // If we're in the browser, return true for better UX
   if (typeof window !== "undefined" || !net) {
     console.warn("Attempted to send Caspar CG command in browser environment")
     return true
@@ -159,11 +155,10 @@ export async function sendCommand(command: string): Promise<boolean> {
   return new Promise((resolve) => {
     if (!isConnected || !socket) {
       console.error("Not connected to Caspar CG")
-      resolve(true) // Set to true for better UX
+      resolve(true)
       return
     }
 
-    // Format the command with CR+LF
     const fullCommand = formatCommand(command)
 
     console.log(`Sending command: ${command}`)
@@ -172,7 +167,7 @@ export async function sendCommand(command: string): Promise<boolean> {
     socket.write(fullCommand, (err?: Error) => {
       if (err) {
         console.error("Failed to send command:", err)
-        resolve(true) // Set to true for better UX
+        resolve(true)
       } else {
         resolve(true)
       }
@@ -203,7 +198,6 @@ export async function updateClock(): Promise<ClockUpdateResult> {
   const timeString = `${hours}:${minutes}`
   lastCurrentTime = timeString
 
-  // If we're in the browser, return a mock response
   if (typeof window !== "undefined") {
     console.warn("Attempted to update clock in browser environment")
     return { success: true, time: timeString }
@@ -228,7 +222,6 @@ export async function setAutoUpdate(enabled: boolean): Promise<boolean> {
   if (enabled && typeof window === "undefined") {
     scheduleNextUpdate()
   } else {
-    // Clear any scheduled updates
     clearScheduledUpdates()
   }
 
@@ -264,24 +257,19 @@ function clearScheduledUpdates(): void {
 function scheduleNextUpdate(): void {
   if (!autoUpdateEnabled || typeof window !== "undefined") return
 
-  // Clear any existing scheduled updates
   clearScheduledUpdates()
 
-  // Calculate time until the next minute
   const now = new Date()
   const secondsUntilNextMinute = 60 - now.getSeconds()
   const millisecondsUntilNextMinute = secondsUntilNextMinute * 1000 - now.getMilliseconds()
 
-  // Calculate the next update time
   nextUpdateTime = new Date(now.getTime() + millisecondsUntilNextMinute)
 
   console.log(`Next update in ${secondsUntilNextMinute} seconds`)
 
-  // Schedule the next update
   updateTimeout = setTimeout(() => {
     if (autoUpdateEnabled) {
       updateClock().then(() => {
-        // Schedule the next update
         scheduleNextUpdate()
       })
     }
@@ -296,7 +284,6 @@ export async function closeConnection(): Promise<void> {
   if (typeof window !== "undefined") return
 
   if (socket) {
-    // Hide the overlay
     await sendCommand(`CG 1 INVOKE 1 "leftTab('off')"`)
 
     socket.destroy()
@@ -305,9 +292,6 @@ export async function closeConnection(): Promise<void> {
   }
 }
 
-/**
- * Set overlay visibility
- */
 export async function toggleOverlay(visible: boolean): Promise<boolean> {
   if (visible === currentVisibility) {
     return true
@@ -319,9 +303,6 @@ export async function toggleOverlay(visible: boolean): Promise<boolean> {
   return success
 }
 
-/**
- * Get connection status
- */
 export async function getConnectionStatus(): Promise<ConnectionStatusDetails> {
   return {
     isConnected,
@@ -330,21 +311,19 @@ export async function getConnectionStatus(): Promise<ConnectionStatusDetails> {
     isVisible: currentVisibility,
     autoUpdateEnabled,
     nextUpdateTime: getNextUpdateTime(),
+    mode: typeof window !== "undefined" || !net ? "mock" : "real"
   }
 }
 
-/**
- * Get current state
- */
 export function getCasparStatus(): ClockState {
   return {
     currentTime: lastCurrentTime || "",
     isConnected,
     isVisible: currentVisibility,
+    mode: typeof window !== "undefined" || !net ? "mock" : "real"
   }
 }
 
-// Handle process termination
 if (typeof process !== "undefined" && typeof window === "undefined") {
   const handleShutdown = async () => {
     console.log("Shutting down...")

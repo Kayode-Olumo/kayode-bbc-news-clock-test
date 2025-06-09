@@ -14,7 +14,7 @@ interface ClockState {
   toggleOverlay: () => Promise<void>
 }
 
-export function useCasparClock(): ClockState {
+export const useCasparClock = (): ClockState => {
   const [currentTime, setCurrentTime] = useState<string>("")
   const [isConnected, setIsConnected] = useState<boolean>(true)
   const [isVisible, setIsVisible] = useState<boolean>(false)
