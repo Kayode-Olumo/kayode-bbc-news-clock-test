@@ -1,3 +1,28 @@
+/**
+ * Caspar CG Client Library
+ * 
+ * This library provides the core functionality for interacting with the Caspar CG server.
+ * It handles all communication with the Caspar CG server, including connection management,
+ * command sending, and clock updates.
+ * 
+ * Key Features:
+ * - Connection management with Caspar CG server
+ * - Command formatting and sending
+ * - Clock updates and synchronization
+ * - Auto-update scheduling
+ * - Template management
+ * - Error handling and recovery
+ * 
+ * The library is designed to work in both server and browser environments:
+ * - Server: Full functionality with actual Caspar CG communication
+ * - Browser: Mock responses for better UX during development
+ * 
+ * Configuration:
+ * - CASPAR_HOST: Server hostname (default: localhost)
+ * - CASPAR_PORT: Server port (default: 5250)
+ */
+
+// Import net only on the server side
 import type { Socket } from 'net';
 import { formatCommand } from "./commands"
 import type { ConnectionStatus, ClockState, ClockUpdateResult, ConnectionStatusDetails } from "./types"
@@ -14,6 +39,12 @@ let currentVisibility = false
 let lastSentCommand: string | null = null
 let lastCurrentTime: string | null = null
 
+/**
+ * Initialize the connection to Caspar CG
+ * Establishes a TCP connection to the Caspar CG server and sets up event handlers
+ * 
+ * @returns {Promise<ConnectionStatus>} Connection status and message
+ */
 let net: typeof import('net') | undefined;
 if (typeof window === "undefined") {
   import('net').then(module => {
@@ -23,36 +54,49 @@ if (typeof window === "undefined") {
   });
 }
 
+/**
+ * Establishes a connection to the Caspar CG server.
+ * This function handles the connection lifecycle including error handling,
+ * timeout management, and template initialization.
+ * @returns Promise<ConnectionStatus> - The connection status and message
+ */
 export async function connectToCaspar(): Promise<ConnectionStatus> {
+  // Check if running in browser environment - return mock connection
   if (typeof window !== "undefined") {
     console.warn("Attempted to initialize Caspar CG connection in browser environment")
     return { connected: true, message: "Mock connection in browser environment" }
   }
 
+  // Verify net module is available - return mock connection if not
   if (!net) {
     console.warn("Net module not available")
     return { connected: true, message: "Mock connection (net module not available)" }
   }
 
+  // Return early if already connected
   if (isConnected && socket) {
     return { connected: true, message: "Already connected" }
   }
 
+  // Create new connection promise
   return new Promise((resolve) => {
     try {
       const netModule = net!
       socket = new netModule.Socket()
 
+      // Set up connection timeout - will destroy socket if connection takes too long
       const timeout = setTimeout(() => {
         socket?.destroy()
         resolve({ connected: false, message: "Connection timeout" })
       }, 5000)
 
+      // Handle successful connection
       socket.on("connect", () => {
         clearTimeout(timeout)
         isConnected = true
         console.log(`Connected to Caspar CG at ${CASPAR_HOST}:${CASPAR_PORT}`)
 
+        // Add template and handle auto-update if enabled
         addTemplate()
           .then(() => {
             if (autoUpdateEnabled) {
@@ -66,6 +110,7 @@ export async function connectToCaspar(): Promise<ConnectionStatus> {
           })
       })
 
+      // Handle connection errors
       socket.on("error", (error: Error) => {
         clearTimeout(timeout)
         console.error("Socket error:", error)
@@ -74,14 +119,17 @@ export async function connectToCaspar(): Promise<ConnectionStatus> {
         resolve({ connected: false, message: `Connection error: ${error.message}` })
       })
 
+      // Handle connection closure
       socket.on("close", () => {
         isConnected = false
         socket = null
         console.log("Connection closed")
       })
 
+      // Attempt to establish connection
       socket.connect(CASPAR_PORT, CASPAR_HOST)
     } catch (error) {
+      // Handle any errors during socket creation
       console.error("Failed to create socket:", error)
       resolve({
         connected: true,
@@ -91,6 +139,13 @@ export async function connectToCaspar(): Promise<ConnectionStatus> {
   })
 }
 
+/**
+ * Send a command to Caspar CG
+ * Formats and sends a command to the Caspar CG server
+ * 
+ * @param {string} command - The command to send
+ * @returns {Promise<boolean>} Success status of the command
+ */
 export async function sendCommand(command: string): Promise<boolean> {
   if (typeof window !== "undefined" || !net) {
     console.warn("Attempted to send Caspar CG command in browser environment")
@@ -120,10 +175,22 @@ export async function sendCommand(command: string): Promise<boolean> {
   })
 }
 
+/**
+ * Add the template to channel 1
+ * Loads the main template into Caspar CG
+ * 
+ * @returns {Promise<boolean>} Success status of the operation
+ */
 export async function addTemplate(): Promise<boolean> {
   return sendCommand("CG 1 ADD 1 main/MAIN 1")
 }
 
+/**
+ * Update the clock on the UI
+ * Sends the current time to Caspar CG for display
+ * 
+ * @returns {Promise<ClockUpdateResult>} Result containing success status and current time
+ */
 export async function updateClock(): Promise<ClockUpdateResult> {
   const now = new Date()
   const hours = now.getHours().toString().padStart(2, "0")
@@ -142,6 +209,13 @@ export async function updateClock(): Promise<ClockUpdateResult> {
   return { success, time: timeString }
 }
 
+/**
+ * Set auto-update enabled/disabled
+ * Configures whether the clock should update automatically
+ * 
+ * @param {boolean} enabled - Whether auto-update should be enabled
+ * @returns {Promise<boolean>} Success status of the operation
+ */
 export async function setAutoUpdate(enabled: boolean): Promise<boolean> {
   autoUpdateEnabled = enabled
 
@@ -154,10 +228,19 @@ export async function setAutoUpdate(enabled: boolean): Promise<boolean> {
   return true
 }
 
+/**
+ * Get the next scheduled update time
+ * 
+ * @returns {string|null} The next update time in local time format, or null if no update scheduled
+ */
 export function getNextUpdateTime(): string | null {
   return nextUpdateTime ? nextUpdateTime.toLocaleTimeString() : null
 }
 
+/**
+ * Clear any scheduled updates
+ * Removes any pending clock updates
+ */
 function clearScheduledUpdates(): void {
   if (updateTimeout) {
     clearTimeout(updateTimeout)
@@ -167,6 +250,10 @@ function clearScheduledUpdates(): void {
   }
 }
 
+/**
+ * Schedule the next clock update
+ * Calculates and schedules the next automatic clock update
+ */
 function scheduleNextUpdate(): void {
   if (!autoUpdateEnabled || typeof window !== "undefined") return
 
@@ -189,6 +276,10 @@ function scheduleNextUpdate(): void {
   }, millisecondsUntilNextMinute)
 }
 
+/**
+ * Close the connection to Caspar CG
+ * Cleans up resources and closes the socket connection
+ */
 export async function closeConnection(): Promise<void> {
   if (typeof window !== "undefined") return
 
